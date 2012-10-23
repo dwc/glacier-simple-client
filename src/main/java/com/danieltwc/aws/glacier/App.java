@@ -1,32 +1,28 @@
 package com.danieltwc.aws.glacier;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.glacier.AmazonGlacierClient;
-import com.amazonaws.services.glacier.model.DeleteArchiveRequest;
-import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
-import com.amazonaws.services.glacier.transfer.UploadResult;
+
+import com.danieltwc.aws.glacier.commands.GlacierCommand;
+import com.danieltwc.aws.glacier.commands.impl.*;
 
 public class App {
     static AWSCredentials credentials;
     static AmazonGlacierClient client;
 
     public static void main(String[] args) {
-        if (args.length < 3) {
-            System.err.println("App <properties> <vault> <command> [...]");
-            System.exit(1);
-        }
+        loadCredentials("credentials.properties");
+        loadClient();
+        runCommand(args);
+    }
 
-        String propertiesFilename = args[0];
-        String vaultName = args[1];
-        String command = args[2];
-
+    public static void loadCredentials(String propertiesFilename) {
         try {
             InputStream properties = new FileInputStream(propertiesFilename);
             credentials = new PropertiesCredentials(properties);
@@ -36,53 +32,53 @@ public class App {
             System.err.println(e);
             System.exit(1);
         }
+    }
+
+    public static void loadClient() {
+        client = new AmazonGlacierClient(credentials);
+    }
+
+    public static void runCommand(String[] args) {
+        if (args.length < 2) {
+            System.err.println("App <command> <vault> [...]");
+            System.exit(1);
+        }
+
+        String command = args[0].toLowerCase();
+        String vaultName = args[1];
+        String[] commandArgs = (String[]) Arrays.copyOfRange(args, 2, args.length);
 
         try {
-            client = new AmazonGlacierClient(credentials);
+            GlacierCommand cmd = new UnknownCommand();
 
-            if (command.equalsIgnoreCase("upload")) {
-                if (args.length < 5) {
-                    System.err.println("App <properties> <vault> upload <file> <comment>");
-                    System.exit(1);
-                }
-
-                String archiveFilename = args[3];
-                String comment = args[4];
-
-                System.out.println("Uploading [" + archiveFilename + "] to vault [" + vaultName + "]...");
-                UploadResult result = upload(vaultName, archiveFilename, comment);
-                String archiveId = result.getArchiveId();
-                System.out.println("Uploaded [" + archiveFilename + "] to vault [" + vaultName + "] and received archive ID [" + archiveId + "]");
+            if (command.equals("list")) {
+                // TODO
             }
-            else if (command.equalsIgnoreCase("delete")) {
-                if (args.length < 4) {
-                    System.err.println("App <properties> <vault> delete <archive>");
-                    System.exit(1);
-                }
-
-                String archiveId = args[3];
-
-                System.out.println("Deleting [" + archiveId + "] from vault [" + vaultName + "]...");
-                client.deleteArchive(new DeleteArchiveRequest()
-                                     .withVaultName(vaultName)
-                                     .withArchiveId(archiveId));
-                System.out.println("Deleted [" + archiveId + "] from vault [" + vaultName + "]");
+            else if (command.equals("upload")) {
+                cmd = new UploadCommand();
             }
-            else {
-                System.err.println("Unknown command [" + command + "]");
+            else if (command.equals("delete")) {
+                cmd = new DeleteCommand();
             }
+            else if (command.equals("download")) {
+                // TODO
+            }
+            else if (command.equals("contents")) {
+                // TODO
+            }
+
+            cmd.setOut(System.out);
+            cmd.setArgs(commandArgs);
+            cmd.setClient(client);
+            cmd.setCredentials(credentials);
+            cmd.setVaultName(vaultName);
+
+            cmd.run();
         }
         catch (Exception e) {
             System.err.println("Command [" + command + "] failed:");
             System.err.println(e);
             System.exit(1);
         }
-    }
-
-    public static UploadResult upload(String vaultName, String archiveFilename, String comment) throws FileNotFoundException {
-        ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
-
-        File file = new File(archiveFilename);
-        return atm.upload(vaultName, comment, file);
     }
 }
