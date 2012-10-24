@@ -49,7 +49,7 @@ public class App {
             GlacierCommand cmd = new UnknownCommand();
 
             if (command.equals("list")) {
-                // TODO
+                cmd = new ListCommand();
             }
             else if (command.equals("upload")) {
                 cmd = new UploadCommand();
