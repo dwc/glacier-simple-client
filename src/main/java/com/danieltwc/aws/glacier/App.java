@@ -1,14 +1,14 @@
 package com.danieltwc.aws.glacier;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.IOException;
 import java.util.Arrays;
 
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.glacier.AmazonGlacierClient;
 
+import com.danieltwc.aws.HomeDirectoryAWSCredentialsProvider;
 import com.danieltwc.aws.glacier.commands.GlacierCommand;
 import com.danieltwc.aws.glacier.commands.impl.*;
 
@@ -17,21 +17,18 @@ public class App {
     static AmazonGlacierClient client;
 
     public static void main(String[] args) {
-        loadCredentials("credentials.properties");
+        loadCredentials();
         loadClient();
         runCommand(args);
     }
 
-    public static void loadCredentials(String propertiesFilename) {
-        try {
-            InputStream properties = new FileInputStream(propertiesFilename);
-            credentials = new PropertiesCredentials(properties);
-        }
-        catch (IOException e) {
-            System.err.println("Could not find AWS credentials:");
-            System.err.println(e);
-            System.exit(1);
-        }
+    public static void loadCredentials() {
+        AWSCredentialsProvider provider = new AWSCredentialsProviderChain(
+            new HomeDirectoryAWSCredentialsProvider(),
+            new DefaultAWSCredentialsProviderChain()
+        );
+
+        credentials = provider.getCredentials();
     }
 
     public static void loadClient() {
