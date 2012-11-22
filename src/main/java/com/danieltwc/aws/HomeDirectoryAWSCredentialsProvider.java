@@ -10,7 +10,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.PropertiesCredentials;
 
 public class HomeDirectoryAWSCredentialsProvider implements AWSCredentialsProvider {
-    private static String DEFAULT_PROPERTIES_FILE = ".AwsCredentials.properties";
+    private static final String DEFAULT_PROPERTIES_FILE = ".AwsCredentials.properties";
 
     private final File credentialsFile;
 
