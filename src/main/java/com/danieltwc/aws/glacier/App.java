@@ -49,7 +49,6 @@ public class App {
             GlacierCommand cmd = new UnknownCommand();
 
             if (command.equals("list")) {
-                cmd = new ListCommand();
             }
             else if (command.equals("upload")) {
                 cmd = new UploadCommand();
@@ -60,8 +59,8 @@ public class App {
             else if (command.equals("download")) {
                 // TODO
             }
-            else if (command.equals("contents")) {
-                // TODO
+            else if (command.equals("inventory")) {
+                cmd = new InventoryCommand();
             }
 
             cmd.setOut(System.out);

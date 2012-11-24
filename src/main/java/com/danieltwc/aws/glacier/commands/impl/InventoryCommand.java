@@ -29,8 +29,8 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 
 import com.danieltwc.aws.glacier.commands.GlacierCommand;
 
-public class ListCommand extends GlacierCommand {
-    private final String DEFAULT_FILENAME = "inventory.txt";
+public class InventoryCommand extends GlacierCommand {
+    private final String DEFAULT_FILENAME = "inventory.json";
     private final int SLEEP_TIME = 600;  // seconds
 
     private ObjectMapper jsonMapper;
@@ -47,7 +47,7 @@ public class ListCommand extends GlacierCommand {
         String sqsQueueURL = args[1];
         String filename = args.length > 2 ? args[2] : DEFAULT_FILENAME;
 
-        out.println("Listing [" + vaultName + "] using SNS topic [" + snsTopicARN + "] and SQS queue [" + sqsQueueURL + "]...");
+        out.println("Retrieving inventory for [" + vaultName + "] using SNS topic [" + snsTopicARN + "] and SQS queue [" + sqsQueueURL + "]...");
 
         jsonMapper = new ObjectMapper();
         jsonFactory = jsonMapper.getJsonFactory();
@@ -107,9 +107,10 @@ public class ListCommand extends GlacierCommand {
                     JsonNode descriptionNode = parseJSON(body);
                     String retrievedJobId = descriptionNode.get("JobId").getTextValue();
                     String statusCode = descriptionNode.get("StatusCode").getTextValue();
-                    out.println("Found job [" + retrievedJobId + "] and status [" + statusCode + "]");
 
                     if (retrievedJobId.equals(jobId)) {
+                        out.println("Found job [" + retrievedJobId + "] and status [" + statusCode + "]!");
+
                         messageFound = true;
 
                         if (statusCode.equals("Succeeded")) {
