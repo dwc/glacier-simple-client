@@ -10,12 +10,16 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.PropertiesCredentials;
 
 public class HomeDirectoryAWSCredentialsProvider implements AWSCredentialsProvider {
-    private static final String DEFAULT_PROPERTIES_FILE = ".AwsCredentials.properties";
+    private static final String DEFAULT_CREDENTIALS_DIRECTORY = ".aws";
+    private static final String DEFAULT_CREDENTIALS_FILENAME = "credentials.properties";
+    private static final String DEFAULT_CREDENTIALS_PATH = DEFAULT_CREDENTIALS_DIRECTORY
+        + System.getProperty("file.separator")
+        + DEFAULT_CREDENTIALS_FILENAME;
 
     private final File credentialsFile;
 
     public HomeDirectoryAWSCredentialsProvider() {
-        this(DEFAULT_PROPERTIES_FILE);
+        this(DEFAULT_CREDENTIALS_PATH);
     }
 
     public HomeDirectoryAWSCredentialsProvider(String credentialsFilePath) {
