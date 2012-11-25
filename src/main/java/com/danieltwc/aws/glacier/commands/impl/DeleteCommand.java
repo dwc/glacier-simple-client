@@ -6,11 +6,11 @@ import com.danieltwc.aws.glacier.commands.GlacierCommand;
 
 public class DeleteCommand extends GlacierCommand {
     public void run() {
-        if (args.length < 1) {
+        if (args.size() < 1) {
             throw new IllegalArgumentException("delete <archive>");
         }
 
-        String archiveId = args[0];
+        String archiveId = args.get(0);
 
         out.println("Deleting [" + archiveId + "] from vault [" + vaultName + "]...");
         client.deleteArchive(new DeleteArchiveRequest()

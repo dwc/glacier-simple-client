@@ -39,13 +39,13 @@ public class InventoryCommand extends GlacierCommand {
     private AmazonSNSClient snsClient;
 
     public void run() throws InterruptedException, JsonParseException, IOException, Exception {
-        if (args.length < 2) {
+        if (args.size() < 2) {
             throw new IllegalArgumentException("list <sns-topic-arn> <sqs-queue-url>");
         }
 
-        String snsTopicARN = args[0];
-        String sqsQueueURL = args[1];
-        String filename = args.length > 2 ? args[2] : DEFAULT_FILENAME;
+        String snsTopicARN = args.get(0);
+        String sqsQueueURL = args.get(1);
+        String filename = args.size() > 2 ? args.get(2) : DEFAULT_FILENAME;
 
         out.println("Retrieving inventory for [" + vaultName + "] using SNS topic [" + snsTopicARN + "] and SQS queue [" + sqsQueueURL + "]...");
 

@@ -10,12 +10,12 @@ import com.danieltwc.aws.glacier.commands.GlacierCommand;
 
 public class UploadCommand extends GlacierCommand {
     public void run() throws FileNotFoundException {
-        if (args.length < 2) {
+        if (args.size() < 2) {
             throw new IllegalArgumentException("upload <file> <comment>");
         }
 
-        String archiveFilename = args[0];
-        String comment = args[1];
+        String archiveFilename = args.get(0);
+        String comment = args.get(1);
 
         out.println("Uploading [" + archiveFilename + "] to vault [" + vaultName + "]...");
 

@@ -1,13 +1,14 @@
 package com.danieltwc.aws.glacier.commands;
 
 import java.io.PrintStream;
+import java.util.List;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.glacier.AmazonGlacierClient;
 
 public abstract class GlacierCommand implements Command {
     protected PrintStream out;
-    protected String[] args;
+    protected List<String> args;
     protected AWSCredentials credentials;
     protected AmazonGlacierClient client;
     protected String vaultName;
@@ -16,7 +17,7 @@ public abstract class GlacierCommand implements Command {
         this.out = out;
     }
 
-    public void setArgs(String... args) {
+    public void setArgs(List<String> args) {
         this.args = args;
     }
 
