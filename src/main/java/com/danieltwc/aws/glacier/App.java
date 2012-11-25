@@ -82,7 +82,7 @@ public class App {
                 cmd = new UploadCommand();
             }
             else if (command.equals(DOWNLOAD_COMMAND)) {
-                // TODO
+                cmd = new DownloadCommand();
             }
             else if (command.equals(DELETE_COMMAND)) {
                 cmd = new DeleteCommand();
