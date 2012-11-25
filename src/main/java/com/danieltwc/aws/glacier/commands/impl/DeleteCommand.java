@@ -13,9 +13,12 @@ public class DeleteCommand extends GlacierCommand {
         String archiveId = args.get(0);
 
         out.println("Deleting [" + archiveId + "] from vault [" + vaultName + "]...");
-        client.deleteArchive(new DeleteArchiveRequest()
-                             .withVaultName(vaultName)
-                             .withArchiveId(archiveId));
+
+        DeleteArchiveRequest request = new DeleteArchiveRequest()
+            .withVaultName(vaultName)
+            .withArchiveId(archiveId);
+        client.deleteArchive(request);
+
         out.println("Deleted [" + archiveId + "] from vault [" + vaultName + "]");
     }
 }
