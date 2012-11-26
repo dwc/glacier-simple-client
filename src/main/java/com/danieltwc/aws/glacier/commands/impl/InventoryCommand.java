@@ -96,9 +96,10 @@ public class InventoryCommand extends GlacierCommand {
             ReceiveMessageRequest request = new ReceiveMessageRequest(sqsQueueURL)
                 .withMaxNumberOfMessages(10);
             List<Message> msgs = sqsClient.receiveMessage(request).getMessages();
+            int numMsgs = msgs.size();
 
-            if (msgs.size() > 0) {
-                out.println("Found at least one message; looking for job [" + jobId + "]...");
+            if (numMsgs > 0) {
+                out.println("Found " + numMsgs + "message" + (numMsgs == 1 ? "" : "s") + "; looking for job [" + jobId + "]...");
 
                 for (Message msg : msgs) {
                     JsonNode bodyNode = parseJSON(msg.getBody());
@@ -120,7 +121,7 @@ public class InventoryCommand extends GlacierCommand {
                 }
             }
             else {
-                out.println("Sleeping [" + SLEEP_TIME + "] seconds...");
+                out.println("No messages found; sleeping [" + SLEEP_TIME + "] seconds...");
                 Thread.sleep(SLEEP_TIME * 1000);
             }
         }
