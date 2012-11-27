@@ -23,6 +23,7 @@ public class App {
     private static final String UPLOAD_COMMAND = "upload";
     private static final String DOWNLOAD_COMMAND = "download";
     private static final String DELETE_COMMAND = "delete";
+    private static final String SAVE_JOB_OUTPUT_COMMAND = "save-job-output";
 
     static AWSCredentials credentials;
     static AmazonGlacierClient client;
@@ -86,6 +87,9 @@ public class App {
             }
             else if (command.equals(DELETE_COMMAND)) {
                 cmd = new DeleteCommand();
+            }
+            else if (command.equals(SAVE_JOB_OUTPUT_COMMAND)) {
+                cmd = new SaveJobOutputCommand();
             }
 
             cmd.setOut(System.out);

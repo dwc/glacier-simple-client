@@ -1,12 +1,7 @@
 package com.danieltwc.aws.glacier.commands.impl;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jackson.JsonFactory;
@@ -15,19 +10,16 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.amazonaws.services.glacier.model.GetJobOutputRequest;
-import com.amazonaws.services.glacier.model.GetJobOutputResult;
 import com.amazonaws.services.glacier.model.InitiateJobRequest;
 import com.amazonaws.services.glacier.model.InitiateJobResult;
 import com.amazonaws.services.glacier.model.JobParameters;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQSClient;
-import com.amazonaws.services.sqs.model.GetQueueUrlRequest;
-import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 
 import com.danieltwc.aws.glacier.commands.GlacierCommand;
+import com.danieltwc.aws.glacier.helpers.SaveJobOutputHelper;
 
 public class InventoryCommand extends GlacierCommand {
     private final String DEFAULT_FILENAME = "inventory.json";
@@ -64,11 +56,11 @@ public class InventoryCommand extends GlacierCommand {
             throw new Exception("Job [" + jobId + "] did not complete successfully!");
         }
 
-        out.println("Downloading output for job [" + jobId + "]...");
-        GetJobOutputResult jobOutputResult = downloadJobOutput(vaultName, jobId);
-
         out.println("Saving inventory to [" + filename + "]...");
-        saveInventory(jobOutputResult, filename);
+
+        SaveJobOutputHelper helper = new SaveJobOutputHelper();
+        helper.run(client, vaultName, jobId, filename);
+
         out.println("Inventory for [" + vaultName + "] saved to [" + filename + "]");
     }
 
@@ -134,30 +126,5 @@ public class InventoryCommand extends GlacierCommand {
         JsonNode node = jsonMapper.readTree(parser);
 
         return node;
-    }
-
-    private GetJobOutputResult downloadJobOutput(String vaultName, String jobId) {
-        GetJobOutputRequest request = new GetJobOutputRequest()
-            .withVaultName(vaultName)
-            .withJobId(jobId);
-        GetJobOutputResult result = client.getJobOutput(request);
-
-        return result;
-    }
-
-    private void saveInventory(GetJobOutputResult result, String filename) throws IOException {
-        Writer writer = new BufferedWriter(new FileWriter(filename));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(result.getBody()));
-
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                writer.write(line);
-            }
-        }
-        finally {
-            try { reader.close(); } catch (Exception e) {}
-            try { writer.close(); } catch (Exception e) {}
-        }
     }
 }
