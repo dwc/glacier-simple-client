@@ -99,7 +99,7 @@ public class InventoryCommand extends GlacierCommand {
             int numMsgs = msgs.size();
 
             if (numMsgs > 0) {
-                out.println("Found " + numMsgs + "message" + (numMsgs == 1 ? "" : "s") + "; looking for job [" + jobId + "]...");
+                out.println("Found " + numMsgs + " message" + (numMsgs == 1 ? "" : "s") + "; looking for job [" + jobId + "]...");
 
                 for (Message msg : msgs) {
                     JsonNode bodyNode = parseJSON(msg.getBody());
