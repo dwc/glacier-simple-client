@@ -32,7 +32,7 @@ public class InventoryCommand extends GlacierCommand {
 
     public void run() throws InterruptedException, JsonParseException, IOException, Exception {
         if (args.size() < 2) {
-            throw new IllegalArgumentException("list <sns-topic-arn> <sqs-queue-url>");
+            throw new IllegalArgumentException("<sns-topic-arn> <sqs-queue-url>");
         }
 
         String snsTopicARN = args.get(0);

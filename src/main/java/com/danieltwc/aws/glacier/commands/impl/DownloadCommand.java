@@ -9,7 +9,7 @@ import com.danieltwc.aws.glacier.commands.GlacierCommand;
 public class DownloadCommand extends GlacierCommand {
     public void run() {
         if (args.size() < 2) {
-            throw new IllegalArgumentException("download <archive-id> <filename>");
+            throw new IllegalArgumentException("<archive-id> <filename>");
         }
 
         String archiveId = args.get(0);

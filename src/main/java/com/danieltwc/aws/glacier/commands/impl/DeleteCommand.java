@@ -7,7 +7,7 @@ import com.danieltwc.aws.glacier.commands.GlacierCommand;
 public class DeleteCommand extends GlacierCommand {
     public void run() {
         if (args.size() < 1) {
-            throw new IllegalArgumentException("delete <archive>");
+            throw new IllegalArgumentException("<archive>");
         }
 
         String archiveId = args.get(0);

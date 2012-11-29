@@ -11,7 +11,7 @@ import com.danieltwc.aws.glacier.commands.GlacierCommand;
 public class UploadCommand extends GlacierCommand {
     public void run() throws FileNotFoundException {
         if (args.size() < 2) {
-            throw new IllegalArgumentException("upload <file> <comment>");
+            throw new IllegalArgumentException("<file> <comment>");
         }
 
         String archiveFilename = args.get(0);

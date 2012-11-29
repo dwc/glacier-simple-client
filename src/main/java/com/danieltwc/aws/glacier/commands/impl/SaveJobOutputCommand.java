@@ -8,7 +8,7 @@ import com.danieltwc.aws.glacier.helpers.SaveJobOutputHelper;
 public class SaveJobOutputCommand extends GlacierCommand {
     public void run() throws InterruptedException, IOException, Exception {
         if (args.size() < 2) {
-            throw new IllegalArgumentException("save-job-output <job-id> <filename>");
+            throw new IllegalArgumentException("<job-id> <filename>");
         }
 
         String jobId = args.get(0);

@@ -15,8 +15,8 @@ import com.danieltwc.aws.glacier.commands.GlacierCommand;
 import com.danieltwc.aws.glacier.commands.impl.*;
 
 public class App {
-    // Commands that do not operate on a vault, e.g. "list"
-    private static final List<String> NO_VAULT_COMMANDS = new ArrayList<String>();
+    // Commands that operate on a vault, e.g. "inventory"
+    private static final List<String> VAULT_COMMANDS = new ArrayList<String>();
 
     private static final String LIST_COMMAND = "list";
     private static final String INVENTORY_COMMAND = "inventory";
@@ -29,7 +29,11 @@ public class App {
     static AmazonGlacierClient client;
 
     public static void main(String[] rawArgs) {
-        NO_VAULT_COMMANDS.add(LIST_COMMAND);
+        VAULT_COMMANDS.add(INVENTORY_COMMAND);
+        VAULT_COMMANDS.add(UPLOAD_COMMAND);
+        VAULT_COMMANDS.add(DOWNLOAD_COMMAND);
+        VAULT_COMMANDS.add(DELETE_COMMAND);
+        VAULT_COMMANDS.add(SAVE_JOB_OUTPUT_COMMAND);
 
         List<String> args = new ArrayList<String>(Arrays.asList(rawArgs));
 
@@ -61,12 +65,7 @@ public class App {
         String command = args.remove(0).toLowerCase();
         String vaultName = null;
 
-        if (!NO_VAULT_COMMANDS.contains(command)) {
-            if (args.size() < 2) {
-                System.err.println("App <command> <vault> [...]");
-                System.exit(1);
-            }
-
+        if (VAULT_COMMANDS.contains(command)) {
             vaultName = args.remove(0);
         }
 
@@ -99,6 +98,18 @@ public class App {
             cmd.setVaultName(vaultName);
 
             cmd.run();
+        }
+        catch (IllegalArgumentException e) {
+            String msg = "App " + command + " ";
+
+            if (VAULT_COMMANDS.contains(command)) {
+                msg += "<vault> ";
+            }
+
+            msg += e.getMessage();
+
+            System.err.println(msg);
+            System.exit(1);
         }
         catch (Exception e) {
             System.err.println("Command [" + command + "] failed:");
