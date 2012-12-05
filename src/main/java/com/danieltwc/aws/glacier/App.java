@@ -66,6 +66,11 @@ public class App {
         String vaultName = null;
 
         if (VAULT_COMMANDS.contains(command)) {
+            if (args.size() < 1) {
+                System.err.println("App <command> <vault> [...]");
+                System.exit(1);
+            }
+
             vaultName = args.remove(0);
         }
 
