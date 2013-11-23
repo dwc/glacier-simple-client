@@ -50,6 +50,11 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>com.danieltwc.aws.glacier.App</mainClass>
+            </manifest>
+          </archive>
         </configuration>
         <executions>
           <execution>
