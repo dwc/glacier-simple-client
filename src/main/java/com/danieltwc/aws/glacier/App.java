@@ -2,7 +2,9 @@ package com.danieltwc.aws.glacier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -12,28 +14,24 @@ import com.amazonaws.services.glacier.AmazonGlacierClient;
 
 import com.danieltwc.aws.HomeDirectoryAWSCredentialsProvider;
 import com.danieltwc.aws.glacier.commands.GlacierCommand;
+import com.danieltwc.aws.glacier.commands.GeneralCommand;
+import com.danieltwc.aws.glacier.commands.VaultCommand;
 import com.danieltwc.aws.glacier.commands.impl.*;
 
 public class App {
-    // Commands that operate on a vault, e.g. "inventory"
-    private static final List<String> VAULT_COMMANDS = new ArrayList<String>();
-
-    private static final String LIST_COMMAND = "list";
-    private static final String INVENTORY_COMMAND = "inventory";
-    private static final String UPLOAD_COMMAND = "upload";
-    private static final String DOWNLOAD_COMMAND = "download";
-    private static final String DELETE_COMMAND = "delete";
-    private static final String SAVE_JOB_OUTPUT_COMMAND = "save-job-output";
+    /** Command name and associated object to run that command */
+    private static final Map<String, GlacierCommand> COMMANDS = new HashMap<String, GlacierCommand>();
 
     static AWSCredentials credentials;
     static AmazonGlacierClient client;
 
     public static void main(String[] rawArgs) {
-        VAULT_COMMANDS.add(INVENTORY_COMMAND);
-        VAULT_COMMANDS.add(UPLOAD_COMMAND);
-        VAULT_COMMANDS.add(DOWNLOAD_COMMAND);
-        VAULT_COMMANDS.add(DELETE_COMMAND);
-        VAULT_COMMANDS.add(SAVE_JOB_OUTPUT_COMMAND);
+        COMMANDS.put("list", new ListCommand());
+        COMMANDS.put("inventory", new InventoryCommand());
+        COMMANDS.put("upload", new UploadCommand());
+        COMMANDS.put("download", new DownloadCommand());
+        COMMANDS.put("delete", new DeleteCommand());
+        COMMANDS.put("save-job-output", new SaveJobOutputCommand());
 
         List<String> args = new ArrayList<String>(Arrays.asList(rawArgs));
 
@@ -56,70 +54,52 @@ public class App {
     }
 
     public static void runCommand(List<String> args) {
-        // The list command does not need a vault
+        // Pull the command off the arguments
         if (args.size() < 1) {
-            System.err.println("App <command> [...]");
+            System.err.println(usage());
             System.exit(1);
         }
 
-        String command = args.remove(0).toLowerCase();
-        String vaultName = null;
+        String cmdArg = args.remove(0).toLowerCase();
+        GlacierCommand cmdObj = new UnknownCommand();
 
-        if (VAULT_COMMANDS.contains(command)) {
-            if (args.size() < 1) {
-                System.err.println("App <command> <vault> [...]");
-                System.exit(1);
-            }
-
-            vaultName = args.remove(0);
+        if (COMMANDS.containsKey(cmdArg)) {
+            cmdObj = COMMANDS.get(cmdArg);
         }
 
         try {
-            GlacierCommand cmd = new UnknownCommand();
+            cmdObj.setOut(System.out);
+            cmdObj.setArgs(args);
+            cmdObj.setClient(client);
+            cmdObj.setCredentials(credentials);
 
-            if (command.equals(LIST_COMMAND)) {
-                cmd = new ListCommand();
-            }
-            else if (command.equals(INVENTORY_COMMAND)) {
-                cmd = new InventoryCommand();
-            }
-            else if (command.equals(UPLOAD_COMMAND)) {
-                cmd = new UploadCommand();
-            }
-            else if (command.equals(DOWNLOAD_COMMAND)) {
-                cmd = new DownloadCommand();
-            }
-            else if (command.equals(DELETE_COMMAND)) {
-                cmd = new DeleteCommand();
-            }
-            else if (command.equals(SAVE_JOB_OUTPUT_COMMAND)) {
-                cmd = new SaveJobOutputCommand();
-            }
-
-            cmd.setOut(System.out);
-            cmd.setArgs(args);
-            cmd.setClient(client);
-            cmd.setCredentials(credentials);
-            cmd.setVaultName(vaultName);
-
-            cmd.run();
+            cmdObj.run();
         }
         catch (IllegalArgumentException e) {
-            String msg = "App " + command + " ";
-
-            if (VAULT_COMMANDS.contains(command)) {
-                msg += "<vault> ";
-            }
-
-            msg += e.getMessage();
-
-            System.err.println(msg);
-            System.exit(1);
-        }
-        catch (Exception e) {
-            System.err.println("Command [" + command + "] failed:");
+            System.err.println(usage(cmdArg));
             System.err.println(e);
             System.exit(1);
         }
+        catch (Exception e) {
+            System.err.println("Command '" + cmdArg + "' failed:");
+            System.err.println(e);
+            System.exit(1);
+        }
+    }
+
+    public static String usage() {
+        String usage =  usage("<command>");
+        usage += "\n\n";
+        usage += "Command can be one of the following:";
+
+        for (String cmd : COMMANDS.keySet()) {
+            usage += "\n    " + cmd;
+        }
+
+        return usage;
+    }
+
+    public static String usage(String cmd) {
+        return "App " + cmd;
     }
 }

@@ -18,10 +18,10 @@ import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 
-import com.danieltwc.aws.glacier.commands.GlacierCommand;
+import com.danieltwc.aws.glacier.commands.VaultCommand;
 import com.danieltwc.aws.glacier.helpers.SaveJobOutputHelper;
 
-public class InventoryCommand extends GlacierCommand {
+public class InventoryCommand extends VaultCommand {
     private final String DEFAULT_FILENAME = "inventory.json";
     private final int SLEEP_TIME = 600;  // seconds
 
@@ -31,15 +31,17 @@ public class InventoryCommand extends GlacierCommand {
     private AmazonSNSClient snsClient;
 
     public void run() throws InterruptedException, JsonParseException, IOException, Exception {
+        super.run();
+
         if (args.size() < 2) {
-            throw new IllegalArgumentException("<sns-topic-arn> <sqs-queue-url>");
+            throw new IllegalArgumentException("Must specify an SNS topic ARN and an SQS queue URL");
         }
 
         String snsTopicARN = args.get(0);
         String sqsQueueURL = args.get(1);
         String filename = args.size() > 2 ? args.get(2) : DEFAULT_FILENAME;
 
-        out.println("Retrieving inventory for [" + vaultName + "] using SNS topic [" + snsTopicARN + "] and SQS queue [" + sqsQueueURL + "]...");
+        out.println("Retrieving inventory for '" + vaultName + "' using SNS topic '" + snsTopicARN + "' and SQS queue '" + sqsQueueURL + "'...");
 
         jsonMapper = new ObjectMapper();
         jsonFactory = jsonMapper.getJsonFactory();
@@ -50,18 +52,18 @@ public class InventoryCommand extends GlacierCommand {
         InitiateJobResult initiateJobResult = initiateJob(vaultName, snsTopicARN);
         String jobId = initiateJobResult.getJobId();
 
-        out.println("Waiting for job [" + jobId + "] to complete...");
+        out.println("Waiting for job '" + jobId + "' to complete...");
         Boolean success = waitForJobToComplete(jobId, sqsQueueURL);
         if (!success) {
-            throw new Exception("Job [" + jobId + "] did not complete successfully!");
+            throw new Exception("Job '" + jobId + "' did not complete successfully!");
         }
 
-        out.println("Saving inventory to [" + filename + "]...");
+        out.println("Saving inventory to '" + filename + "'...");
 
         SaveJobOutputHelper helper = new SaveJobOutputHelper();
         helper.run(client, vaultName, jobId, filename);
 
-        out.println("Inventory for [" + vaultName + "] saved to [" + filename + "]");
+        out.println("Inventory for '" + vaultName + "' saved to '" + filename + "'");
     }
 
     private InitiateJobResult initiateJob(String vaultName, String snsTopicARN) {
@@ -83,7 +85,7 @@ public class InventoryCommand extends GlacierCommand {
         Boolean jobSuccessful = false;
 
         while (!messageFound) {
-            out.println("Checking for messages on queue [" + sqsQueueURL + "]...");
+            out.println("Checking for messages on queue '" + sqsQueueURL + "'...");
 
             ReceiveMessageRequest request = new ReceiveMessageRequest(sqsQueueURL)
                 .withMaxNumberOfMessages(10);
@@ -91,7 +93,7 @@ public class InventoryCommand extends GlacierCommand {
             int numMsgs = msgs.size();
 
             if (numMsgs > 0) {
-                out.println("Found " + numMsgs + " message" + (numMsgs == 1 ? "" : "s") + "; looking for job [" + jobId + "]...");
+                out.println("Found " + numMsgs + " message" + (numMsgs == 1 ? "" : "s") + "; looking for job '" + jobId + "'...");
 
                 for (Message msg : msgs) {
                     JsonNode bodyNode = parseJSON(msg.getBody());
@@ -102,7 +104,7 @@ public class InventoryCommand extends GlacierCommand {
                     String statusCode = descriptionNode.get("StatusCode").getTextValue();
 
                     if (retrievedJobId.equals(jobId)) {
-                        out.println("Found job [" + retrievedJobId + "] and status [" + statusCode + "]!");
+                        out.println("Found job '" + retrievedJobId + "' and status '" + statusCode + "'!");
 
                         messageFound = true;
 
@@ -113,7 +115,7 @@ public class InventoryCommand extends GlacierCommand {
                 }
             }
             else {
-                out.println("No messages found; sleeping [" + SLEEP_TIME + "] seconds...");
+                out.println("No messages found; sleeping '" + SLEEP_TIME + "' seconds...");
                 Thread.sleep(SLEEP_TIME * 1000);
             }
         }

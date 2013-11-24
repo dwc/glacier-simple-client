@@ -11,7 +11,6 @@ public abstract class GlacierCommand implements Command {
     protected List<String> args;
     protected AWSCredentials credentials;
     protected AmazonGlacierClient client;
-    protected String vaultName;
 
     public void setOut(PrintStream out) {
         this.out = out;
@@ -29,7 +28,6 @@ public abstract class GlacierCommand implements Command {
         this.client = client;
     }
 
-    public void setVaultName(String vaultName) {
-        this.vaultName = vaultName;
+    public void run() throws Exception {
     }
 }

@@ -6,13 +6,15 @@ import com.amazonaws.services.glacier.model.DescribeVaultOutput;
 import com.amazonaws.services.glacier.model.ListVaultsRequest;
 import com.amazonaws.services.glacier.model.ListVaultsResult;
 
-import com.danieltwc.aws.glacier.commands.GlacierCommand;
+import com.danieltwc.aws.glacier.commands.GeneralCommand;
 
-public class ListCommand extends GlacierCommand {
-    public void run() {
-        String marker = null;
+public class ListCommand extends GeneralCommand {
+    public void run() throws Exception {
+        super.run();
 
         // Take an optional marker to list more than 1000 vaults
+        String marker = null;
+
         if (args.size() > 0) {
             marker = args.get(0);
         }
@@ -32,7 +34,7 @@ public class ListCommand extends GlacierCommand {
 
         String nextMarker = result.getMarker();
         if (nextMarker != null) {
-            msg += "; continue list using using marker [" + nextMarker + "]";
+            msg += "; continue list using using marker '" + nextMarker + "'";
         }
 
         out.println(msg);
